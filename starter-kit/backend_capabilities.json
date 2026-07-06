@@ -1,0 +1,72 @@
+{
+  "version": "2026-07",
+  "note": "LoomQ 官方后端能力表（机读版）。L2「智能选后端」判定以本表为唯一基准；数值为评测基准快照，各平台实时状态以其控制台公告为准。选手 Agent 可直接加载本文件作为选型知识库。",
+  "backends": [
+    {
+      "id": "spinq_taurus_simulator",
+      "platform": "spinq",
+      "name": "量旋 SpinQit Taurus 本地模拟器",
+      "kind": "simulator",
+      "max_qubits": 24,
+      "queue": "none",
+      "cost": "free",
+      "requires_account": false,
+      "notes": "pip install spinqit 即用，无需联网"
+    },
+    {
+      "id": "spinq_cloud_qpu",
+      "platform": "spinq",
+      "name": "量旋云真机（超导 / 核磁，2–8 比特）",
+      "kind": "qpu",
+      "max_qubits": 8,
+      "queue": "minutes_to_hours",
+      "cost": "free_quota",
+      "requires_account": true,
+      "notes": "SpinQ Cloud 注册后使用，推荐作为首个打通的真机"
+    },
+    {
+      "id": "originq_local_simulator",
+      "platform": "originq",
+      "name": "本源 pyqpanda 本地模拟器（CPUQVM）",
+      "kind": "simulator",
+      "max_qubits": 30,
+      "queue": "none",
+      "cost": "free",
+      "requires_account": false,
+      "notes": "上限受本机内存约束，30 为评测基准值"
+    },
+    {
+      "id": "originq_wukong",
+      "platform": "originq",
+      "name": "本源悟空超导真机（悟空芯 72 比特）",
+      "kind": "qpu",
+      "max_qubits": 72,
+      "queue": "hours",
+      "cost": "free_quota",
+      "requires_account": true,
+      "notes": "需在本源量子云注册并申请 API Token；硬件 ID real_chip_wukong_72，支持最多 200 线路并行提交"
+    },
+    {
+      "id": "braket_local_simulator",
+      "platform": "braket",
+      "name": "AWS Braket LocalSimulator",
+      "kind": "simulator",
+      "max_qubits": 25,
+      "queue": "none",
+      "cost": "free",
+      "requires_account": false,
+      "notes": "随 amazon-braket-sdk 本地运行，无需 AWS 账号，评测推荐默认模拟器"
+    },
+    {
+      "id": "braket_cloud",
+      "platform": "braket",
+      "name": "AWS Braket 云端（SV1 托管模拟器 / 各厂商 QPU）",
+      "kind": "cloud",
+      "max_qubits": 34,
+      "queue": "minutes_to_hours",
+      "cost": "paid",
+      "requires_account": true,
+      "notes": "按任务 + shots 计费；SV1 托管模拟器 34 比特；本赛题允许以 LocalSimulator 替代，无需使用付费云端"
+    }
+  ]
+}
