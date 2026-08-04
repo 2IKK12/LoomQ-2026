@@ -9,6 +9,13 @@ dependency-free statevector executor and returns the required normalized result
 schema. See [`docs/L1_ARCHITECTURE.md`](docs/L1_ARCHITECTURE.md) for design,
 gate coverage, bit-order handling, and verification commands.
 
+L2 is implemented in `loomq_agent.py`. It calls the organizer-provided
+OpenAI-compatible model environment, grounds backend selection in the official
+machine-readable capability table, and validates generated QASM through L1
+before returning it. Invalid QASM receives one validator-guided repair attempt.
+See [`docs/L2_AGENT.md`](docs/L2_AGENT.md) for the closed loop, environment
+variables, security rules, and offline tests.
+
 Quick L1 verification from this directory:
 
 ```bash
