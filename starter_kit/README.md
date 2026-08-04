@@ -1,5 +1,20 @@
 # LoomQ Starter Kit v1.1.0
 
+## 2IKK12 submission implementation
+
+L1 is implemented as a real shared transpilation pipeline in `loomq_l1.py`:
+OpenQASM 2.0 is parsed into one backend-neutral circuit, then emitted as SpinQ
+OpenQASM 2.0, canonical OriginIR, or Braket OpenQASM 3. `run()` uses a
+dependency-free statevector executor and returns the required normalized result
+schema. See [`docs/L1_ARCHITECTURE.md`](docs/L1_ARCHITECTURE.md) for design,
+gate coverage, bit-order handling, and verification commands.
+
+Quick L1 verification from this directory:
+
+```bash
+python3 evaluator.py --level l1 --target spinq,originq,braket
+```
+
 本工具包定义参赛提交协议，并提供公开自测。它不包含正式评分器、隐藏答案、Mock 得分路径或任何 Level 的参考解答。
 
 ## 提交结构

@@ -7,18 +7,24 @@ the functions directly or delegate to another language/runtime with subprocess.
 
 from typing import Any, Dict, List, Tuple
 
+try:
+    from .loomq_l1 import emit_target, execute, parse_qasm
+except ImportError:
+    from loomq_l1 import emit_target, execute, parse_qasm
+
 
 SUPPORTED_TARGETS = ("spinq", "originq", "braket")
 
 
 def transpile(qasm_str: str, target: str) -> str:
     """Translate OpenQASM 2.0 into the target backend's native representation."""
-    raise NotImplementedError("Implement transpile(qasm_str, target)")
+    return emit_target(parse_qasm(qasm_str), target)
 
 
 def run(qasm_str: str, target: str, shots: int) -> Dict[str, Any]:
     """Execute a circuit and return the unified result schema from the rules."""
-    raise NotImplementedError("Implement run(qasm_str, target, shots)")
+    circuit = parse_qasm(qasm_str)
+    return execute(circuit, target, shots, qasm_str)
 
 
 def agent_chat(prompt: str) -> str:
