@@ -66,3 +66,13 @@ python3 -m unittest tests.test_l2_agent -v
 They cover valid generation, validator-driven repair, capability-record
 grounding, non-QASM backend replies, and malformed API responses. The official
 transport-contract tests separately exercise a real local HTTP endpoint.
+
+With real model environment variables configured, run the entrant smoke suite:
+
+```bash
+python3 l2_smoke_test.py
+```
+
+It makes five model calls covering a four-qubit GHZ variant, broken Bell code,
+and three backend-constraint combinations. Generated circuits are executed by
+L1 and checked for semantic fidelity rather than accepted on syntax alone.
