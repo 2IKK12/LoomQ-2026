@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="LoomQ 用自然语言带你完成第一次量子实验">
+  <title>LoomQ · 第一次量子实验</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="LoomQ 首页">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span>LoomQ</span>
+    </a>
+    <div class="session-status"><span class="status-dot"></span>本地实验台 <b>01</b></div>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">不需要会编程 · 不需要懂物理</p>
+      <h1 id="page-title">说出你的想法，<br><span>看它织成量子电路。</span></h1>
+      <p class="lede">从一句话开始。LoomQ 会解释每一步、检查电路，并在本地模拟器中运行，不产生云端费用。</p>
+    </section>
+
+    <section class="loom" aria-label="量子实验工作台">
+      <div class="thread-map" aria-hidden="true">
+        <span class="thread-label">意图</span><i></i><i></i><i></i><span class="thread-label">QASM</span><i></i><i></i><i></i><span class="thread-label">结果</span>
+      </div>
+
+      <article class="conversation panel">
+        <div class="panel-head">
+          <div><span class="step">A</span><h2>描述实验</h2></div>
+          <span class="helper">用日常语言就好</span>
+        </div>
+        <div class="starter-prompts" aria-label="示例任务">
+          <button data-prompt="帮我制备一个 3 比特 GHZ 态，测量全部比特，并用零基础能懂的话解释。">3 比特纠缠</button>
+          <button data-prompt="我想做贝尔态，但代码 H q[0]; CX q[0] q[1] 报错了，请修好并解释。">修复贝尔电路</button>
+          <button data-prompt="我要运行 15 比特电路，必须零排队且免费，应该选哪个后端？">选择运行后端</button>
+        </div>
+        <div id="messages" class="messages" aria-live="polite">
+          <div class="message guide">
+            <span class="speaker">LoomQ</span>
+            <p>你想验证什么？可以直接说“做一个三比特纠缠实验”，也可以粘贴出错的代码。</p>
+          </div>
+        </div>
+        <form id="chat-form" class="composer">
+          <label for="prompt" class="sr-only">实验描述</label>
+          <textarea id="prompt" rows="3" placeholder="例如：我想看看两个量子比特如何纠缠…" required></textarea>
+          <button id="send" type="submit"><span>编织电路</span><span aria-hidden="true">↗</span></button>
+        </form>
+      </article>
+
+      <article class="workbench panel">
+        <div class="panel-head">
+          <div><span class="step">B</span><h2>观察与运行</h2></div>
+          <span id="circuit-status" class="badge">等待电路</span>
+        </div>
+        <div class="circuit-window">
+          <div class="code-toolbar"><span>OPENQASM 2.0</span><button id="copy" type="button" disabled>复制</button></div>
+          <pre id="qasm"><code>// 电路会在这里出现
+// LoomQ 将在运行前自动检查它</code></pre>
+        </div>
+        <div class="run-controls">
+          <label>后端
+            <select id="target">
+              <option value="braket">Braket 本地</option>
+              <option value="originq">OriginQ 本地</option>
+              <option value="spinq">SpinQ 本地</option>
+            </select>
+          </label>
+          <label>测量次数
+            <select id="shots">
+              <option value="1024">1,024</option>
+              <option value="4096">4,096</option>
+              <option value="8192">8,192</option>
+            </select>
+          </label>
+          <button id="run" type="button" disabled>运行实验</button>
+        </div>
+        <div id="result" class="result empty">
+          <div class="result-title"><span>测量结果</span><small>每根线代表一种可能</small></div>
+          <div id="bars" class="bars"><p>运行电路后，概率分布会在这里展开。</p></div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer><span>你的 API Key 只存在本机环境变量中</span><span>LoomQ · Team 2IKK12</span></footer>
+  <script src="/app.js" defer></script>
+</body>
+</html>

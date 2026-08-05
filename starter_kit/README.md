@@ -16,6 +16,18 @@ before returning it. Invalid QASM receives one validator-guided repair attempt.
 See [`docs/L2_AGENT.md`](docs/L2_AGENT.md) for the closed loop, environment
 variables, security rules, and offline tests.
 
+### 启动零基础交互界面
+
+在终端中配置好 `LOOMQ_LLM_*` 环境变量后，从 `starter_kit/` 运行：
+
+```bash
+python3 web_app.py
+```
+
+打开 `http://127.0.0.1:8765` 即可用自然语言生成电路、查看经 L1
+校验的 QASM，并在三种本地目标上运行与查看概率分布。API Key
+只由 Python 服务端从环境变量读取，不会发送到浏览器。
+
 Quick L1 verification from this directory:
 
 ```bash
