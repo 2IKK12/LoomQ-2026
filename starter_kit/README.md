@@ -27,6 +27,11 @@ AST, and RISC-V code generator for the published Hybrid-QASM classical subset.
 The quantum portion is validated by L1 rather than treated as unchecked text.
 See [`docs/L3_HYBRID.md`](docs/L3_HYBRID.md) for mappings and verification.
 
+An experimental quantum RISC-V `CUSTOM-0` extension is implemented separately
+from L3 in `quantum_riscv.py` and the extended `riscv_emulator.py`. Its honest
+v1 executable subset is QINIT/H/X/CX/MEASURE. Encoding and end-to-end verification
+are documented in [`docs/QUANTUM_RISCV_EXTENSION.md`](docs/QUANTUM_RISCV_EXTENSION.md).
+
 ### 启动零基础交互界面
 
 在终端中配置好 `LOOMQ_LLM_*` 环境变量后，从 `starter_kit/` 运行：

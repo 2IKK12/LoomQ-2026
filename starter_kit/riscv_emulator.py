@@ -6,16 +6,28 @@ LoomQ 量子接入平权计划 - 轻量级 RISC-V 寄存器与控制流模拟器
 支持基础的通用寄存器操作和控制流分支跳转指令，无需选手配置重型 QEMU。
 """
 
+import math
+import random
 from typing import Dict, List, Tuple, Any
 
+try:
+    from .quantum_riscv import QINIT, QH, QX, QCX, QMEASURE, decode_quantum_instruction
+except ImportError:
+    from quantum_riscv import QINIT, QH, QX, QCX, QMEASURE, decode_quantum_instruction
+
 class TinyRISCVEmulator:
-    def __init__(self):
+    def __init__(self, quantum_seed: int = 0):
         # 32个通用寄存器 x0 - x31，x0 恒为 0
         self.registers = [0] * 32
         self.pc = 0
         self.labels: Dict[str, int] = {}
         self.instructions: List[Tuple[str, List[str]]] = []
         self.max_steps = 1000  # 防止死循环
+        self.quantum_seed = quantum_seed
+        self.quantum_rng = random.Random(quantum_seed)
+        self.quantum_qubits = 0
+        self.quantum_state: List[complex] = []
+        self.quantum_trace: List[str] = []
 
     def set_register(self, reg: str, value: int):
         idx = self._parse_reg_idx(reg)
@@ -43,6 +55,10 @@ class TinyRISCVEmulator:
         self.labels = {}
         self.pc = 0
         self.registers = [0] * 32
+        self.quantum_rng = random.Random(self.quantum_seed)
+        self.quantum_qubits = 0
+        self.quantum_state = []
+        self.quantum_trace = []
         
         lines = asm_code.split("\n")
         temp_instructions = []
@@ -136,6 +152,11 @@ class TinyRISCVEmulator:
                 if label not in self.labels:
                     raise ValueError(f"未定义的跳转标签: {label}")
                 next_pc = self.labels[label]
+
+            elif op == ".word":
+                if len(args) != 1:
+                    raise ValueError(".word 量子指令需要一个32位编码值")
+                self._execute_quantum_word(int(args[0], 0))
                 
             else:
                 raise ValueError(f"不支持的指令操作: {op}")
@@ -148,6 +169,83 @@ class TinyRISCVEmulator:
             if val != 0:
                 result[f"x{idx}"] = val
         return result
+
+    def _require_quantum_qubit(self, index: int) -> None:
+        if not self.quantum_state:
+            raise ValueError("量子指令执行前必须先执行 QINIT")
+        if not 0 <= index < self.quantum_qubits:
+            raise ValueError(f"量子比特索引超出范围: q[{index}]")
+
+    def _single_qubit(self, qubit: int, matrix: Tuple[Tuple[complex, complex], Tuple[complex, complex]]) -> None:
+        self._require_quantum_qubit(qubit)
+        stride = 1 << qubit
+        for base in range(0, len(self.quantum_state), stride * 2):
+            for offset in range(stride):
+                zero = base + offset
+                one = zero + stride
+                a, b = self.quantum_state[zero], self.quantum_state[one]
+                self.quantum_state[zero] = matrix[0][0] * a + matrix[0][1] * b
+                self.quantum_state[one] = matrix[1][0] * a + matrix[1][1] * b
+
+    def _measure(self, qubit: int) -> int:
+        self._require_quantum_qubit(qubit)
+        probability_one = sum(
+            abs(amplitude) ** 2
+            for basis, amplitude in enumerate(self.quantum_state)
+            if basis & (1 << qubit)
+        )
+        measured = 1 if self.quantum_rng.random() < probability_one else 0
+        norm = math.sqrt(probability_one if measured else 1.0 - probability_one)
+        if norm <= 1e-15:
+            measured = 1 - measured
+            norm = math.sqrt(probability_one if measured else 1.0 - probability_one)
+        for basis in range(len(self.quantum_state)):
+            bit = 1 if basis & (1 << qubit) else 0
+            self.quantum_state[basis] = self.quantum_state[basis] / norm if bit == measured else 0j
+        return measured
+
+    def _execute_quantum_word(self, word: int) -> None:
+        decoded = decode_quantum_instruction(word)
+        operation = decoded["operation"]
+        rd, rs1, rs2 = decoded["rd"], decoded["rs1"], decoded["rs2"]
+        if operation == QINIT:
+            if rd or rs2 or not 1 <= rs1 <= 16:
+                raise ValueError("QINIT 编码字段无效")
+            self.quantum_qubits = rs1
+            self.quantum_state = [0j] * (1 << rs1)
+            self.quantum_state[0] = 1 + 0j
+            self.quantum_trace.append(f"qinit {rs1}")
+            return
+        self._require_quantum_qubit(rs1)
+        if operation == QH:
+            if rd or rs2:
+                raise ValueError("QH 保留字段必须为零")
+            root = 1 / math.sqrt(2)
+            self._single_qubit(rs1, ((root, root), (root, -root)))
+            self.quantum_trace.append(f"h q[{rs1}]")
+        elif operation == QX:
+            if rd or rs2:
+                raise ValueError("QX 保留字段必须为零")
+            self._single_qubit(rs1, ((0, 1), (1, 0)))
+            self.quantum_trace.append(f"x q[{rs1}]")
+        elif operation == QCX:
+            if rd or rs1 == rs2:
+                raise ValueError("QCX 编码字段无效")
+            self._require_quantum_qubit(rs2)
+            updated = [0j] * len(self.quantum_state)
+            for basis, amplitude in enumerate(self.quantum_state):
+                destination = basis ^ (1 << rs2) if basis & (1 << rs1) else basis
+                updated[destination] += amplitude
+            self.quantum_state = updated
+            self.quantum_trace.append(f"cx q[{rs1}], q[{rs2}]")
+        elif operation == QMEASURE:
+            if not rd or rs2:
+                raise ValueError("QMEASURE 编码字段无效")
+            measured = self._measure(rs1)
+            self.set_register(f"x{rd}", measured)
+            self.quantum_trace.append(f"measure q[{rs1}] -> x{rd} = {measured}")
+        else:  # decode_quantum_instruction already rejects unknown ids.
+            raise ValueError(f"不支持的量子指令: {operation}")
 
 # 简易功能测试
 if __name__ == "__main__":

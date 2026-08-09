@@ -11,7 +11,7 @@
 - [ ] L1 真机
 - [x] L2 交互体验
 - [x] 工程与产品化
-- [ ] 自定义量子 RISC-V Bonus
+- [x] 自定义量子 RISC-V Bonus
 - [x] 新手引导与视觉叙事 Bonus
 
 ## L1 真机
@@ -81,9 +81,9 @@ python3 l2_smoke_test.py
 以下三项必须齐全且测试通过，才获得 8 分：
 
 ```text
-指令编码规格：[填写文档路径]
-模拟器扩展实现：[填写代码路径]
-端到端测试命令：[填写命令或文档路径]
+指令编码规格：starter_kit/docs/QUANTUM_RISCV_EXTENSION.md
+模拟器扩展实现：starter_kit/riscv_emulator.py；编码/解码与 QASM lowering 位于 starter_kit/quantum_riscv.py
+端到端测试命令：python3 -m unittest tests.test_quantum_riscv -v
 ```
 
 ## 新手引导与视觉叙事 Bonus
