@@ -22,6 +22,11 @@ answer the agent's questions in several short turns; the formal competition
 See [`docs/L2_AGENT.md`](docs/L2_AGENT.md) for the closed loop, environment
 variables, security rules, and offline tests.
 
+L3 is implemented in `hybrid_compiler.py` as a lexer, recursive-descent parser,
+AST, and RISC-V code generator for the published Hybrid-QASM classical subset.
+The quantum portion is validated by L1 rather than treated as unchecked text.
+See [`docs/L3_HYBRID.md`](docs/L3_HYBRID.md) for mappings and verification.
+
 ### 启动零基础交互界面
 
 在终端中配置好 `LOOMQ_LLM_*` 环境变量后，从 `starter_kit/` 运行：

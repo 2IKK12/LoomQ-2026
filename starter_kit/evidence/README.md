@@ -69,7 +69,7 @@ python3 l2_smoke_test.py
 
 ```text
 干净环境中的构建和启动命令：starter_kit/README.md（“环境”“启动零基础交互界面”）；无第三方 Python 依赖
-架构说明：starter_kit/docs/L1_ARCHITECTURE.md；starter_kit/docs/L2_AGENT.md
+架构说明：starter_kit/docs/L1_ARCHITECTURE.md；starter_kit/docs/L2_AGENT.md；starter_kit/docs/L3_HYBRID.md
 目标用户和使用场景：首次接触量子计算的学习者及跨学科探索者，用自然语言提出问题，经可验证 QASM 和共享 IR 连接多种目标格式，再运行本地理想模拟器理解 counts
 完整使用流程：starter_kit/README.md；starter_kit/docs/L2_AGENT.md；前端实现位于 starter_kit/web/，本地服务入口为 starter_kit/web_app.py
 ```

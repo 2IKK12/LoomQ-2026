@@ -10,9 +10,11 @@ from typing import Any, Dict, List, Tuple
 try:
     from .loomq_l1 import emit_target, execute, parse_qasm
     from .loomq_agent import agent_chat as _agent_chat
+    from .hybrid_compiler import compile_hybrid as _compile_hybrid
 except ImportError:
     from loomq_l1 import emit_target, execute, parse_qasm
     from loomq_agent import agent_chat as _agent_chat
+    from hybrid_compiler import compile_hybrid as _compile_hybrid
 
 
 SUPPORTED_TARGETS = ("spinq", "originq", "braket")
@@ -36,6 +38,4 @@ def agent_chat(prompt: str) -> str:
 
 def compile_hybrid(hybrid_qasm_str: str) -> Tuple[List[str], str]:
     """Optional L3 entry point. Return quantum operations and RISC-V assembly."""
-    raise NotImplementedError(
-        "L3 is optional; implement compile_hybrid(hybrid_qasm_str) to enter"
-    )
+    return _compile_hybrid(hybrid_qasm_str)
