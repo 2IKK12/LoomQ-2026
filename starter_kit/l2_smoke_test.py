@@ -15,11 +15,11 @@ from typing import Callable
 try:
     from . import adapter
     from .evaluator import calculate_hellinger_fidelity
-    from .loomq_agent import extract_qasm
+    from .loomq_agent import explain_experiment_result, extract_qasm, validate_intent
 except ImportError:
     import adapter
     from evaluator import calculate_hellinger_fidelity
-    from loomq_agent import extract_qasm
+    from loomq_agent import explain_experiment_result, extract_qasm, validate_intent
 
 
 @dataclass(frozen=True)
@@ -53,7 +53,27 @@ def backend_check(allowed: set[str]) -> Callable[[str], tuple[bool, str]]:
     return check
 
 
+def cat_closed_loop_check(answer: str) -> tuple[bool, str]:
+    prompt = "请用代码设计一个 4 量子比特的高级薛定谔猫态实验，并测量全部量子比特。"
+    qasm = extract_qasm(answer)
+    if not qasm:
+        return False, "answer contains no OpenQASM 2.0 program"
+    errors = validate_intent(prompt, qasm)
+    if errors:
+        return False, "intent mismatch: " + "; ".join(errors)
+    result = adapter.run(qasm, "braket", 1024)
+    explanation = explain_experiment_result(prompt, qasm, result, agent_reply=answer)
+    dominant = sorted(result["counts"], key=result["counts"].get, reverse=True)[:2]
+    grounded = any(state in explanation for state in dominant)
+    return grounded, "dominant=" + ",".join(dominant) + "; explanation_grounded=" + str(grounded)
+
+
 CASES = (
+    Case(
+        "closed-loop-cat4",
+        "请用代码设计一个 4 量子比特的高级薛定谔猫态实验，并测量全部量子比特。",
+        cat_closed_loop_check,
+    ),
     Case(
         "generate-ghz4",
         "我是零基础学生。请为四个量子比特制备 GHZ 态，测量所有比特，并给我完整可运行的 OpenQASM 2.0。",

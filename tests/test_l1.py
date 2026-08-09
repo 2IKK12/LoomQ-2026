@@ -122,10 +122,15 @@ class L1SimulatorTests(unittest.TestCase):
         )
 
     def test_cu1_preserves_bell_measurement_distribution(self):
-        self.assert_counts(
-            "h q[0]; cx q[0], q[1]; cu1(pi/3) q[0], q[1]; measure q -> c;",
-            {"000": 50, "011": 50},
-        )
+        source = program("h q[0]; cx q[0], q[1]; cu1(pi/3) q[0], q[1]; measure q -> c;")
+        for target in ("spinq", "originq", "braket"):
+            with self.subTest(target=target):
+                result = adapter.run(source, target, 10_000)
+                self.assertEqual(set(result["counts"]), {"000", "011"})
+                self.assertEqual(sum(result["counts"].values()), 10_000)
+                self.assertGreater(result["counts"]["000"], 4_500)
+                self.assertLess(result["counts"]["000"], 5_500)
+                self.assertEqual(result["meta"]["sampling"], "independent_shots")
 
 
 if __name__ == "__main__":

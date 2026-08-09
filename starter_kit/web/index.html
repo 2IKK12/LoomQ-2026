@@ -3,91 +3,240 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="LoomQ 用自然语言带你完成第一次量子实验">
-  <title>LoomQ · 第一次量子实验</title>
-  <link rel="stylesheet" href="/styles.css">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="不需要量子计算背景，也能完成并理解第一次量子实验。LoomQ 把你的好奇翻译成一个可以运行的量子实验。">
+  <title>LoomQ · 从一个好奇开始的量子实验</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="ambient" aria-hidden="true"></div>
+  <div class="cosmos" aria-hidden="true">
+    <div class="nebula"></div>
+    <div class="stars"></div>
+    <div class="grid-veil"></div>
+  </div>
+
+  <!-- shared orb graphic, reused at different sizes/states across the page -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="loomq-orb" viewBox="0 0 100 100">
+        <circle class="orb-halo" cx="50" cy="50" r="34"></circle>
+        <g class="orb-ring orb-ring--a"><ellipse cx="50" cy="50" rx="38" ry="15"></ellipse></g>
+        <g class="orb-ring orb-ring--b"><ellipse cx="50" cy="50" rx="38" ry="15"></ellipse></g>
+        <g class="orb-ring orb-ring--c"><ellipse cx="50" cy="50" rx="38" ry="15"></ellipse></g>
+        <circle class="orb-core" cx="50" cy="50" r="7"></circle>
+      </symbol>
+    </defs>
+  </svg>
+
   <header class="topbar">
     <a class="brand" href="/" aria-label="LoomQ 首页">
-      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <svg class="orb orb--mark" data-state="idle"><use href="#loomq-orb"></use></svg>
       <span>LoomQ</span>
     </a>
-    <div class="session-status"><span class="status-dot"></span>本地实验台 <b>01</b></div>
+    <div class="topbar-actions">
+      <p class="plain-promise">没有外行问题，只有还没被听见的好奇</p>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换为白天模式" aria-pressed="false">
+        <span class="theme-icon" aria-hidden="true">☼</span><span class="theme-label">白天</span>
+      </button>
+    </div>
   </header>
 
+  <aside id="preview-notice" class="preview-notice hidden" role="status">
+    <strong>你正在查看静态界面预览</strong>
+    <span>这个页面不会连接 AI。要获得针对不同问题的真实回答，请启动 LoomQ 后，从 <code>http://127.0.0.1:8765</code> 打开。</span>
+  </aside>
+
   <main>
-    <section class="intro" aria-labelledby="page-title">
-      <p class="eyebrow">不需要会编程 · 不需要懂物理</p>
-      <h1 id="page-title">说出你的想法，<br><span>看它织成量子电路。</span></h1>
-      <p class="lede">从一句话开始。LoomQ 会解释每一步、检查电路，并在本地模拟器中运行，不产生云端费用。</p>
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <p class="eyebrow">量子计算开放平台 · 面向所有人</p>
+        <h1 id="page-title">不需要知道该问什么。<br><span>从一个好奇开始，就够了。</span></h1>
+        <p class="lede">你不必先成为量子专家。LoomQ 会把你的好奇转化为一个说得清楚、看得懂、也能亲手运行的量子实验，再陪你一起读懂结果。</p>
+        <div class="hero-actions">
+          <button id="hero-start" type="button" class="btn btn--primary">开始量子探索</button>
+          <button id="hero-about" type="button" class="btn btn--ghost" aria-expanded="false" aria-controls="about-panel">先用一分钟了解 LoomQ</button>
+        </div>
+      </div>
+      <div class="hero-orb-wrap" aria-hidden="true">
+        <svg class="orb orb--hero" data-state="idle"><use href="#loomq-orb"></use></svg>
+      </div>
     </section>
 
-    <section class="loom" aria-label="量子实验工作台">
-      <div class="thread-map" aria-hidden="true">
-        <span class="thread-label">意图</span><i></i><i></i><i></i><span class="thread-label">QASM</span><i></i><i></i><i></i><span class="thread-label">结果</span>
+    <section id="about-panel" class="about-panel hidden" aria-labelledby="about-title">
+      <h2 id="about-title">一种思想，多种量子语言</h2>
+      <p>不同量子平台使用不同的软件体系——比如 OriginQ 的 OriginIR，或是 Braket、SpinQ 各自的接口。LoomQ Transpiler 是它们之间的翻译核心：你只需要说出好奇，其余的平台差异由 LoomQ 在后台处理。</p>
+      <div class="bridge-diagram">
+        <div class="bridge-node"><b>你的好奇</b><small>用日常语言描述</small></div>
+        <div class="bridge-arrow" aria-hidden="true">→</div>
+        <div class="bridge-node bridge-node--core"><b>LoomQ 翻译核心</b><small>设计实验 · 生成通用线路</small></div>
+        <div class="bridge-arrow" aria-hidden="true">→</div>
+        <div class="bridge-targets">
+          <span class="target-chip target-chip--live">Braket 目标格式</span>
+          <span class="target-chip target-chip--live">OriginQ 目标格式</span>
+          <span class="target-chip target-chip--live">SpinQ 目标格式</span>
+        </div>
+      </div>
+      <p class="bridge-note">LoomQ 当前能转换并验证三个目标格式；页面内实验由 LoomQ 理想状态向量模拟器执行，不会冒充真实量子硬件。比赛资格不要求连接所有量子平台。</p>
+    </section>
+
+    <nav class="journey" aria-label="实验进度">
+      <div class="journey-line" aria-hidden="true"><i id="journey-fill"></i></div>
+      <div class="journey-step active" data-step="1"><b>1</b><span>从好奇开始</span><small>不用专业词</small></div>
+      <div class="journey-step" data-step="2"><b>2</b><span>翻译实验</span><small>共享 IR 连接平台</small></div>
+      <div class="journey-step" data-step="3"><b>3</b><span>运行实验</span><small>本地免费完成</small></div>
+      <div class="journey-step" data-step="4"><b>4</b><span>读懂结果</span><small>通俗解释</small></div>
+    </nav>
+
+    <section id="curiosity-stage" class="stage" aria-labelledby="curiosity-title">
+      <header class="stage-head">
+        <div><span class="stage-number">1</span><div><p>第一步</p><h2 id="curiosity-title">今天想体验什么好奇？</h2></div></div>
+        <p class="stage-hint">点一张卡片，或者用你自己的话说。</p>
+      </header>
+
+      <div class="curiosity-grid">
+        <button class="curiosity-card" data-prompt="我从没学过量子计算。请用一个两比特小实验，让我看到量子世界里两个结果如何产生关联。不要假设我知道任何专业词。">
+          <span class="card-glyph card-glyph--linked" aria-hidden="true"><i></i><i></i></span>
+          <span class="card-copy"><b>两个结果为什么会一起变？</b><small>从“奇妙的关联”认识量子纠缠</small></span>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </button>
+        <button class="curiosity-card" data-prompt="我完全不懂量子计算。请给我一个像抛硬币一样的量子随机实验，让我在运行结果里看到两种可能。">
+          <span class="card-glyph card-glyph--coin" aria-hidden="true">◐</span>
+          <span class="card-copy"><b>量子世界如何“抛硬币”？</b><small>用最简单的实验看见概率</small></span>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </button>
+        <button class="curiosity-card" data-prompt="我是一名没有理工科背景的创作者。请为我选一个一分钟内能运行、结果容易看懂的量子实验，并告诉我它为什么有趣。">
+          <span class="card-glyph card-glyph--surprise" aria-hidden="true">✶</span>
+          <span class="card-copy"><b>我不知道选什么</b><small>为我选一个一分钟小实验</small></span>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </button>
       </div>
 
-      <article class="conversation panel">
-        <div class="panel-head">
-          <div><span class="step">A</span><h2>描述实验</h2></div>
-          <span class="helper">用日常语言就好</span>
+      <form id="chat-form" class="composer">
+        <label for="prompt">或者，说出你自己的好奇</label>
+        <p>不需要使用“量子比特”或“电路”这些词，问题也可以不完整。生活、艺术、哲学、教育、游戏相关的好奇都可以是起点——如果它不适合变成量子实验，LoomQ 也会如实告诉你。</p>
+        <textarea id="prompt" rows="3" placeholder="例如：我听说两个粒子可以产生神奇的关联，能让我看看吗？" required></textarea>
+        <button id="send" type="submit" class="btn btn--primary btn--block"><span>把好奇变成实验</span><span aria-hidden="true">→</span></button>
+      </form>
+    </section>
+
+    <section id="design-stage" class="stage hidden" aria-labelledby="design-title">
+      <header class="stage-head">
+        <div><span class="stage-number">2</span><div><p>第二步</p><h2 id="design-title">LoomQ 把你的好奇翻译成了实验</h2></div></div>
+        <span id="circuit-status" class="badge">正在准备</span>
+      </header>
+
+      <div class="translation-grid">
+        <article class="explanation-card">
+          <div class="companion-row">
+            <svg class="orb orb--status" id="agent-orb-status" data-state="thinking"><use href="#loomq-orb"></use></svg>
+            <p class="card-label">LoomQ Agent · 不需要懂代码</p>
+          </div>
+          <div id="explanation" class="explanation" aria-live="polite"></div>
+          <div id="demo-fallback" class="demo-fallback hidden">
+            <p>当前没有连接到 LoomQ AI 服务。你可以重试，或者查看一个固定的界面示例。</p>
+            <button id="show-demo" type="button" class="btn btn--ghost btn--small">查看固定界面示例（不调用 AI）</button>
+          </div>
+        </article>
+        <article class="promise-card">
+          <p class="card-label">接下来会发生什么</p>
+          <ol>
+            <li><span>1</span><p><b>系统准备实验</b><small>LoomQ 已检查电路是否可以运行</small></p></li>
+            <li><span>2</span><p><b>重复实验多次</b><small>量子实验每次只给一个结果，重复后才能看见规律</small></p></li>
+            <li><span>3</span><p><b>生成测量统计柱状图</b><small>按下运行后，下一步会画出各个测量结果出现的次数，不是生成 AI 图片</small></p></li>
+          </ol>
+        </article>
+      </div>
+
+      <details id="translation-proof" class="translation-proof hidden" open>
+        <summary>
+          <span><b>看看 LoomQ 是怎么翻译的</b><small>从你的问题，到一种中间表示，再到三种目标格式</small></span>
+          <span id="translation-summary-status" class="badge ready">L1 已验证</span>
+        </summary>
+        <div class="translation-proof-body">
+          <div class="translation-source">
+            <p class="card-label">你的问题</p>
+            <p id="translation-question"></p>
+          </div>
+          <span class="translation-arrow" aria-hidden="true">↓</span>
+          <div class="translation-source translation-source--qasm">
+            <div class="translation-source-head"><p class="card-label">LLM 生成 · L1 已解析的 OpenQASM 2.0</p><button id="copy" type="button" disabled>复制源程序</button></div>
+            <pre id="translation-qasm"></pre>
+          </div>
+          <span class="translation-arrow" aria-hidden="true">↓</span>
+          <div class="translator-core">
+            <b>LoomQ Translator</b>
+            <small>12 门白名单 → 共享 IR → 目标格式生成</small>
+            <code id="translator-ir">等待 L1 解析</code>
+          </div>
+          <div id="translation-targets" class="translation-targets"></div>
+          <p class="translation-disclaimer">“已生成”表示代码由同一个 L1 共享 IR 转换并通过本地转换流程；不代表已经在厂商云服务或量子真机上执行，也不把它冒充第三方等价性认证。</p>
         </div>
-        <div class="starter-prompts" aria-label="示例任务">
-          <button data-prompt="帮我制备一个 3 比特 GHZ 态，测量全部比特，并用零基础能懂的话解释。">3 比特纠缠</button>
-          <button data-prompt="我想做贝尔态，但代码 H q[0]; CX q[0] q[1] 报错了，请修好并解释。">修复贝尔电路</button>
-          <button data-prompt="我要运行 15 比特电路，必须零排队且免费，应该选哪个后端？">选择运行后端</button>
-        </div>
-        <div id="messages" class="messages" aria-live="polite">
-          <div class="message guide">
-            <span class="speaker">LoomQ</span>
-            <p>你想验证什么？可以直接说“做一个三比特纠缠实验”，也可以粘贴出错的代码。</p>
+      </details>
+
+      <details id="conversation-panel" class="conversation-panel hidden">
+        <summary class="conversation-head">
+          <div><p class="card-label">本次探索记录</p><h3 id="conversation-title">你和 LoomQ 刚才聊了什么？</h3></div>
+          <small>保存在当前浏览器标签页；“换一个实验”会清空</small>
+        </summary>
+        <div id="conversation-log" class="conversation-log" aria-live="polite"></div>
+      </details>
+
+      <div class="primary-action">
+        <div><b>不需要账号，不产生费用</b><span>首次体验默认在你的电脑本地模拟运行</span></div>
+        <button id="run" type="button" class="btn btn--accent" disabled>运行我的第一次量子实验 <span aria-hidden="true">→</span></button>
+      </div>
+
+      <details class="advanced">
+        <summary><span>调整实验运行设置</span><small>目标格式与重复次数</small></summary>
+        <div class="advanced-body">
+          <div class="settings">
+            <label for="target">这个实验使用哪种目标格式？<small>LoomQ 会转换并验证对应平台语言，再用内置理想模拟器执行。三个选项都在本机完成，不代表已连接厂商真机。</small>
+              <select id="target">
+                <option value="braket">Braket 目标格式（默认）</option>
+                <option value="originq">OriginQ 目标格式</option>
+                <option value="spinq">SpinQ 目标格式</option>
+              </select>
+            </label>
+            <label for="shots">同一个实验重复多少次？<small>量子实验的一次结果可能带有随机性，重复多次才能看出哪些结果更容易出现。</small>
+              <select id="shots">
+                <option value="100">100 次（快速体验）</option>
+                <option value="1024" selected>1,024 次（推荐）</option>
+                <option value="8192">8,192 次（更稳定）</option>
+              </select>
+            </label>
           </div>
         </div>
-        <form id="chat-form" class="composer">
-          <label for="prompt" class="sr-only">实验描述</label>
-          <textarea id="prompt" rows="3" placeholder="例如：我想看看两个量子比特如何纠缠…" required></textarea>
-          <button id="send" type="submit"><span>编织电路</span><span aria-hidden="true">↗</span></button>
-        </form>
-      </article>
+      </details>
+    </section>
 
-      <article class="workbench panel">
-        <div class="panel-head">
-          <div><span class="step">B</span><h2>观察与运行</h2></div>
-          <span id="circuit-status" class="badge">等待电路</span>
-        </div>
-        <div class="circuit-window">
-          <div class="code-toolbar"><span>OPENQASM 2.0</span><button id="copy" type="button" disabled>复制</button></div>
-          <pre id="qasm"><code>// 电路会在这里出现
-// LoomQ 将在运行前自动检查它</code></pre>
-        </div>
-        <div class="run-controls">
-          <label>后端
-            <select id="target">
-              <option value="braket">Braket 本地</option>
-              <option value="originq">OriginQ 本地</option>
-              <option value="spinq">SpinQ 本地</option>
-            </select>
-          </label>
-          <label>测量次数
-            <select id="shots">
-              <option value="1024">1,024</option>
-              <option value="4096">4,096</option>
-              <option value="8192">8,192</option>
-            </select>
-          </label>
-          <button id="run" type="button" disabled>运行实验</button>
-        </div>
-        <div id="result" class="result empty">
-          <div class="result-title"><span>测量结果</span><small>每根线代表一种可能</small></div>
-          <div id="bars" class="bars"><p>运行电路后，概率分布会在这里展开。</p></div>
-        </div>
-      </article>
+    <section id="result-stage" class="stage hidden" aria-labelledby="result-title">
+      <header class="stage-head">
+        <div><span class="stage-number">4</span><div><p>第四步</p><h2 id="result-title">你的第一次量子实验完成了</h2></div></div>
+        <span id="run-meta" class="badge badge--gold">已完成</span>
+      </header>
+      <div class="result-grid">
+        <article class="chart-card">
+          <div class="result-heading"><div><p class="card-label">测量统计图</p><h3>哪些结果出现得最多？</h3></div><small>柱子越长，出现次数越多</small></div>
+          <div id="bars" class="bars"></div>
+          <p class="bit-note"><b>怎么读“00”“11”这样的标签？</b> 每一位数字代表一个量子比特的一次测量结果——它们不是分数，也不是排名，只是这次测量恰好观察到的状态。</p>
+        </article>
+        <article class="meaning-card">
+          <p class="card-label">通俗解释</p>
+          <h3>这些结果告诉了我们什么？</h3>
+          <p id="meaning"></p>
+          <div class="next-actions">
+            <button id="ask-why" type="button" class="btn btn--primary btn--small">我还想知道“为什么”</button>
+            <button id="new-experiment" type="button" class="btn btn--ghost btn--small">换一个实验</button>
+          </div>
+        </article>
+      </div>
     </section>
   </main>
 
-  <footer><span>你的 API Key 只存在本机环境变量中</span><span>LoomQ · Team 2IKK12</span></footer>
-  <script src="/app.js" defer></script>
+  <footer>
+    <span>LoomQ 不要求你成为专家，只希望你保留好奇。</span>
+    <span>你的 API Key 只存在本机 · Team 2IKK12</span>
+  </footer>
+  <script src="app.js" defer></script>
 </body>
 </html>

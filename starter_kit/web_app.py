@@ -12,14 +12,46 @@ from typing import Any
 
 try:
     from . import adapter
-    from .loomq_agent import extract_qasm
+    from .loomq_agent import (
+        agent_chat_with_history,
+        circuit_summary,
+        explain_experiment_result,
+        extract_qasm,
+    )
 except ImportError:
     import adapter
-    from loomq_agent import extract_qasm
+    from loomq_agent import agent_chat_with_history, circuit_summary, explain_experiment_result, extract_qasm
 
 
 WEB_ROOT = Path(__file__).resolve().parent / "web"
 MAX_REQUEST_BYTES = 256 * 1024
+API_VERSION = "closed-loop-4"
+
+
+def build_translation_evidence(qasm: str) -> dict[str, Any]:
+    """Build target programs through the public L1 transpiler, without claiming vendor execution."""
+    labels = {
+        "braket": "Braket · OpenQASM 3.0",
+        "originq": "OriginQ · OriginIR",
+        "spinq": "SpinQ · OpenQASM 2.0",
+    }
+    targets = []
+    for target in ("braket", "originq", "spinq"):
+        output = adapter.transpile(qasm, target)
+        targets.append(
+            {
+                "target": target,
+                "label": labels[target],
+                "status": "generated_from_shared_ir",
+                "output": output,
+            }
+        )
+    return {
+        "source": "OpenQASM 2.0",
+        "verification": "All outputs were generated from the same L1 shared IR.",
+        "vendor_execution_verified": False,
+        "targets": targets,
+    }
 
 
 class LoomQHandler(BaseHTTPRequestHandler):
@@ -53,6 +85,9 @@ class LoomQHandler(BaseHTTPRequestHandler):
         return value
 
     def do_GET(self) -> None:
+        if self.path == "/api/health":
+            self._json(200, {"service": "LoomQ", "api_version": API_VERSION})
+            return
         requested = "index.html" if self.path in {"/", "/index.html"} else self.path.lstrip("/")
         if requested not in {"index.html", "styles.css", "app.js"}:
             self.send_error(404)
@@ -75,10 +110,21 @@ class LoomQHandler(BaseHTTPRequestHandler):
             payload = self._read_json()
             if self.path == "/api/chat":
                 prompt = payload.get("prompt")
+                history = payload.get("history", [])
                 if not isinstance(prompt, str) or not prompt.strip():
                     raise ValueError("请先输入你想做的量子实验")
-                reply = adapter.agent_chat(prompt.strip())
-                self._json(200, {"reply": reply, "qasm": extract_qasm(reply)})
+                reply = agent_chat_with_history(prompt.strip(), history)
+                qasm = extract_qasm(reply)
+                translations = build_translation_evidence(qasm) if qasm else None
+                self._json(
+                    200,
+                    {
+                        "reply": reply,
+                        "qasm": qasm,
+                        "circuit": circuit_summary(qasm) if qasm else None,
+                        "translations": translations,
+                    },
+                )
                 return
             if self.path == "/api/run":
                 qasm = payload.get("qasm")
@@ -87,7 +133,49 @@ class LoomQHandler(BaseHTTPRequestHandler):
                 if not isinstance(qasm, str) or not qasm.strip():
                     raise ValueError("当前没有可运行的 QASM 电路")
                 result = adapter.run(qasm, target, shots)
-                self._json(200, {"result": result})
+                response: dict[str, Any] = {"result": result}
+                if payload.get("explain") is True:
+                    prompt = payload.get("prompt")
+                    agent_reply = payload.get("agent_reply", "")
+                    if not isinstance(prompt, str) or not prompt.strip():
+                        raise ValueError("解释运行结果时缺少原始问题")
+                    if not isinstance(agent_reply, str):
+                        raise ValueError("实验设计说明必须是文本")
+                    try:
+                        response["explanation"] = explain_experiment_result(
+                            prompt,
+                            qasm,
+                            result,
+                            agent_reply=agent_reply,
+                        )
+                    except Exception as exc:
+                        response["explanation_error"] = f"{type(exc).__name__}: {exc}"
+                self._json(200, response)
+                return
+            if self.path == "/api/explain":
+                prompt = payload.get("prompt")
+                qasm = payload.get("qasm")
+                result = payload.get("result")
+                question = payload.get("question", "")
+                agent_reply = payload.get("agent_reply", "")
+                previous = payload.get("previous_explanation", "")
+                if not isinstance(prompt, str) or not prompt.strip():
+                    raise ValueError("追问时缺少原始问题")
+                if not isinstance(qasm, str) or not qasm.strip():
+                    raise ValueError("追问时缺少实验 QASM")
+                if not isinstance(result, dict):
+                    raise ValueError("追问时缺少实验结果")
+                if not all(isinstance(value, str) for value in (question, agent_reply, previous)):
+                    raise ValueError("追问上下文必须是文本")
+                explanation = explain_experiment_result(
+                    prompt,
+                    qasm,
+                    result,
+                    agent_reply=agent_reply,
+                    follow_up=question,
+                    previous_explanation=previous,
+                )
+                self._json(200, {"explanation": explanation})
                 return
             self._json(404, {"error": "接口不存在"})
         except ValueError as exc:

@@ -12,7 +12,13 @@ gate coverage, bit-order handling, and verification commands.
 L2 is implemented in `loomq_agent.py`. It calls the organizer-provided
 OpenAI-compatible model environment, grounds backend selection in the official
 machine-readable capability table, and validates generated QASM through L1
-before returning it. Invalid QASM receives one validator-guided repair attempt.
+before returning it. Invalid syntax or a deterministic mismatch between the
+requested experiment and its circuit receives one validator-guided repair
+attempt. The web flow sends the original question, exact executed QASM, and
+actual counts back to the model for a grounded result explanation and follow-up.
+The browser experience also carries a bounded recent conversation so a user can
+answer the agent's questions in several short turns; the formal competition
+`agent_chat(prompt)` interface remains stateless and unchanged.
 See [`docs/L2_AGENT.md`](docs/L2_AGENT.md) for the closed loop, environment
 variables, security rules, and offline tests.
 
@@ -25,7 +31,7 @@ python3 web_app.py
 ```
 
 打开 `http://127.0.0.1:8765` 即可用自然语言生成电路、查看经 L1
-校验的 QASM，并在三种本地目标上运行与查看概率分布。API Key
+校验的 QASM 与三种目标格式，并用 LoomQ 本地理想状态向量模拟器运行和查看测量统计。API Key
 只由 Python 服务端从环境变量读取，不会发送到浏览器。
 
 Quick L1 verification from this directory:

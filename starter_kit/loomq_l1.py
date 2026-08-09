@@ -11,7 +11,10 @@ import ast
 import cmath
 import hashlib
 import math
+import random
 import re
+import time
+from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Dict, Iterable, List, Sequence, Tuple
@@ -345,6 +348,7 @@ def execute(circuit: Circuit, target: str, shots: int, source_qasm: str) -> dict
         raise ValueError(f"unsupported target {target!r}; choose from {SUPPORTED_TARGETS}")
     if not isinstance(shots, int) or isinstance(shots, bool) or shots <= 0:
         raise ValueError("shots must be a positive integer")
+    started = time.perf_counter()
     state, depth = _simulate(circuit)
     probabilities: Dict[str, float] = {}
     for basis, amplitude in enumerate(state):
@@ -354,11 +358,15 @@ def execute(circuit: Circuit, target: str, shots: int, source_qasm: str) -> dict
         key = "".join(reversed(classical))
         probabilities[key] = probabilities.get(key, 0.0) + abs(amplitude) ** 2
 
-    raw = {key: probability * shots for key, probability in probabilities.items() if probability > 1e-15}
-    counts = {key: int(value) for key, value in raw.items()}
-    remainder = shots - sum(counts.values())
-    for key in sorted(raw, key=lambda item: (raw[item] - counts[item], item), reverse=True)[:remainder]:
-        counts[key] += 1
+    outcomes = [(key, probability) for key, probability in probabilities.items() if probability > 1e-15]
+    sampler = random.Random()
+    samples = sampler.choices(
+        [key for key, _ in outcomes],
+        weights=[probability for _, probability in outcomes],
+        k=shots,
+    )
+    counts = dict(sorted(Counter(samples).items()))
+    execution_ms = (time.perf_counter() - started) * 1000
 
     digest = hashlib.sha256(f"{target}\0{shots}\0{source_qasm}".encode()).hexdigest()[:20]
     backend = {
@@ -378,5 +386,10 @@ def execute(circuit: Circuit, target: str, shots: int, source_qasm: str) -> dict
             "depth": depth,
             "qubits": circuit.qubit_count,
             "simulator": "loomq_statevector_v1",
+            "sampling": "independent_shots",
+            "execution_ms": round(execution_ms, 3),
+            "ideal_probabilities": {
+                key: round(probability, 12) for key, probability in sorted(probabilities.items())
+            },
         },
     }

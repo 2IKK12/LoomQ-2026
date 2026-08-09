@@ -9,10 +9,10 @@
 把要申报项目的方框改成 `[x]`，并填写对应内容：
 
 - [ ] L1 真机
-- [ ] L2 交互体验
-- [ ] 工程与产品化
+- [x] L2 交互体验
+- [x] 工程与产品化
 - [ ] 自定义量子 RISC-V Bonus
-- [ ] 新手引导与视觉叙事 Bonus
+- [x] 新手引导与视觉叙事 Bonus
 
 ## L1 真机
 
@@ -43,14 +43,23 @@ evidence/files/spinq-screenshot.png
 请填写：
 
 ```text
-启动界面或 CLI 的命令：[填写]
-测试入口或页面地址：[填写，没有则写“无”]
+启动界面或 CLI 的命令：cd starter_kit && python3 web_app.py
+测试入口或页面地址：http://127.0.0.1:8765
 适合现场体验的 3 个用户任务：
-1. [填写]
-2. [填写]
-3. [填写]
-截图或演示视频：[选填，填写仓库内路径或稳定只读链接]
+1. 输入“创建一个两量子比特 Bell 关联实验，只使用 H 和 CX，并测量全部量子比特”，查看回答、L1 共享 IR、Braket/OriginQ/SpinQ 三种目标格式并运行 1,024 shots。
+2. 在上一轮之后输入“改成5个，并测量全部量子比特”，验证多轮修改得到 5-qubit GHZ 电路，结果集中在 00000 与 11111，且对话记录可展开查看。
+3. 输入“量子计算会不会让人类变得更幸福？”，验证系统先诚实回答开放问题；若提供学习实验，实验必须生成可见 QASM、通过 L1 白名单并进入同一翻译和运行闭环。
+截图或演示视频：无（以最终代码现场运行结果为准）
 ```
+
+本地真实模型预检命令（需要参赛者自己的 `LOOMQ_LLM_*` 环境变量）：
+
+```text
+python3 evaluator.py --level l2
+python3 l2_smoke_test.py
+```
+
+2026-08-09 本地预检结果分别为 1/1 与 6/6 通过；这只记录赛前自测，不声称是正式评分。`l2_smoke_test.py` 的闭环用例将模型生成的 QASM 交给 L1 本地模拟器执行，再把实际 counts 交给模型解释。
 
 工作人员会在组委会统一模型环境中运行最终代码，测试新手是否看得懂、出错后能否得到有效帮助、结果是否清楚，以及多轮回答是否一致。选手自己的对话截图只用于说明产品流程，不直接证明得分。
 
@@ -59,10 +68,10 @@ evidence/files/spinq-screenshot.png
 已有内容可以直接引用主 README 或其他项目文档，不必复制到本目录。
 
 ```text
-干净环境中的构建和启动命令：[填写命令或文档路径]
-架构说明：[填写文档路径，或用几句话说明主要模块]
-目标用户和使用场景：[填写]
-完整使用流程：[填写文档、截图或演示路径]
+干净环境中的构建和启动命令：starter_kit/README.md（“环境”“启动零基础交互界面”）；无第三方 Python 依赖
+架构说明：starter_kit/docs/L1_ARCHITECTURE.md；starter_kit/docs/L2_AGENT.md
+目标用户和使用场景：首次接触量子计算的学习者及跨学科探索者，用自然语言提出问题，经可验证 QASM 和共享 IR 连接多种目标格式，再运行本地理想模拟器理解 counts
+完整使用流程：starter_kit/README.md；starter_kit/docs/L2_AGENT.md；前端实现位于 starter_kit/web/，本地服务入口为 starter_kit/web_app.py
 ```
 
 工作人员会按最终 commit 实际构建和启动，并检查文档与代码是否一致、产品是否真的降低了量子计算的使用门槛。
@@ -82,10 +91,10 @@ evidence/files/spinq-screenshot.png
 请填写已有材料的路径，不要求为评分另写一套文档：
 
 ```text
-零基础首次运行指南：[填写]
-量子概念解释：[填写]
-结果可视化：[填写]
-错误恢复或无障碍引导：[填写]
+零基础首次运行指南：starter_kit/README.md（“启动零基础交互界面”）；starter_kit/web/index.html 的四阶段引导
+量子概念解释：starter_kit/QUANTUM_101.md；starter_kit/loomq_agent.py 的零基础回答规则；结果页通俗解释
+结果可视化：starter_kit/web/app.js 的真实 counts 柱状图；starter_kit/web/index.html 的测量标签说明
+错误恢复或无障碍引导：starter_kit/web/app.js 的连接/校验/运行错误分流、失败时保留输入与会话恢复；starter_kit/web/styles.css 的键盘焦点、移动端和 prefers-reduced-motion 支持
 ```
 
 以上四项各 1 分。普通项目 README 完整不代表自动获得 Bonus。

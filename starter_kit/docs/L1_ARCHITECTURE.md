@@ -52,10 +52,11 @@ are not allowed.
 ## Execution and reproducibility
 
 `run()` uses the same parsed circuit as `transpile()`. The standard-library
-statevector executor computes the exact output probabilities and converts them
-to integer shot counts using deterministic largest-remainder allocation. This
-makes local and container evaluation reproducible while preserving the ideal
-distribution.
+statevector executor computes the exact ideal output probabilities, then draws
+the requested number of independent shots from that distribution. Counts can
+therefore vary between runs, as measurement samples do, while their sum remains
+exactly equal to `shots`. The result metadata identifies the executor as
+`loomq_statevector_v1`; it is not presented as vendor-cloud or real-hardware data.
 
 ## Verification
 

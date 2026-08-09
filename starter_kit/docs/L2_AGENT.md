@@ -31,12 +31,33 @@ LLM with QASM rules + official backend records
     |
     +-- backend recommendation -> exact canonical backend id
     |
-    +-- QASM response -> extract -> L1 parse/validate -> emit all 3 targets
+    +-- QASM response -> extract -> L1 syntax + target emit validation
+                                      |
+                                      v
+                           deterministic intent validation
+                     (qubits / Bell / GHZ-cat / phase / rotation /
+                       randomness / SWAP / Toffoli / measurement)
                                       |
                                       +-- valid -> return to user
-                                      +-- invalid -> send exact error to LLM
-                                                    -> validate repaired QASM
+                                      +-- mismatch -> send exact error to LLM
+                                                     -> validate repaired QASM
+                                      |
+                                      v
+                             run actual local shots
+                                      |
+                                      v
+                    original question + exact QASM + counts
+                                      |
+                                      v
+                       grounded result explanation / follow-up
 ```
+
+The formal `agent_chat(prompt)` entry point remains stateless exactly as the
+competition contract requires. The local web product uses a separate
+`agent_chat_with_history` layer with at most eight recent user/assistant
+messages. Short replies and pronouns can therefore continue the active topic;
+the latest explicit topic wins, and choosing a new experiment clears history.
+System-role messages from browser input are rejected.
 
 The capability records come directly from `backend_capabilities.json`. This
 allows the model to filter unseen combinations of qubit count, queue, cost,
@@ -73,6 +94,8 @@ With real model environment variables configured, run the entrant smoke suite:
 python3 l2_smoke_test.py
 ```
 
-It makes five model calls covering a four-qubit GHZ variant, broken Bell code,
-and three backend-constraint combinations. Generated circuits are executed by
-L1 and checked for semantic fidelity rather than accepted on syntax alone.
+It covers a four-qubit Schrödinger-cat closed loop, a four-qubit GHZ variant,
+broken Bell code, and three backend-constraint combinations. The cat case makes
+an additional model call after execution and checks that the explanation names
+an actually observed dominant state. Generated circuits are executed by L1 and
+checked for semantic fidelity rather than accepted on syntax alone.
