@@ -1,0 +1,27 @@
+{
+  "platform": "SpinQ Cloud / 量旋云",
+  "backend": "2比特核磁量子计算机",
+  "experiment_name": "LoomQ-L1-Bell-SpinQ",
+  "job_id": "G-260810-0004",
+  "status": "运行成功",
+  "source": "云平台",
+  "created_at_displayed": "2026-08-10 12:59:52",
+  "started_at_displayed": "2026-08-10 15:39:41",
+  "completed_at_displayed": "2026-08-10 15:41:15",
+  "timezone_context": "UTC+8 (Asia/Shanghai session; the task page itself does not print a timezone label)",
+  "shots": null,
+  "measurement_model": "ensemble NMR projection probabilities; the platform task page and export do not expose a shot count",
+  "explicit_measurement_in_qasm": false,
+  "measurement_note": "The SpinQ NMR workflow performs platform-level readout; its accepted and archived QASM contains H and CX but no explicit creg/measure statements.",
+  "probabilities": {
+    "00": 0.42870904,
+    "01": 0.25981577,
+    "10": 0.00699561,
+    "11": 0.30447958
+  },
+  "correlated_probability_00_plus_11": 0.73318862,
+  "raw_result_file": "spinq-nmr-bell-result.msgpack",
+  "raw_result_sha256": "42ff34136c92abe1a1437b303e7744fb2165e587331d46fa7ec6c5ac4fdcf205",
+  "decoded_result_file": "spinq-nmr-bell-decoded.json",
+  "provenance_note": "The 49-byte platform export is preserved byte-for-byte. The decoded JSON was produced by consuming the complete MessagePack map of four string keys and four IEEE-754 float64 values; the values sum to 1.0."
+}

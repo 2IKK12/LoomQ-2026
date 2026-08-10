@@ -59,6 +59,23 @@ shots：1000
 
 截图分工：`editor` 证明提交前在线真机后端与线路；`task-result` 证明 job ID、成功状态、shots、运行时间和平台结果；`mapped-circuit` 证明逻辑线路到物理比特的映射；`compiled-originir` 证明输入 OriginIR 到芯片原生门序列的编译。截图仅作辅助，数值依据仍为平台导出的 CSV。
 
+量旋云核磁真机：
+
+```text
+平台名称：SpinQ Cloud / 量旋云 / 2比特核磁量子计算机
+平台 job ID：G-260810-0004
+运行时间：2026-08-10 15:39:41 至 15:41:15（UTC+8 会话；平台页面未单独标注时区）
+shots：不适用；该核磁真机返回系综投影概率，任务页及导出文件均未提供 shots
+实际执行的 QASM：starter_kit/evidence/files/spinq-nmr-bell.qasm
+平台返回的原始结果：starter_kit/evidence/files/spinq-nmr-bell-result.msgpack
+原始结果解码：starter_kit/evidence/files/spinq-nmr-bell-decoded.json
+任务元数据：starter_kit/evidence/files/spinq-nmr-bell-job.json
+提交前线路与 QASM 截图：starter_kit/evidence/files/spinq-nmr-bell-editor.png
+任务成功与结果截图：starter_kit/evidence/files/spinq-nmr-bell-task-result.png
+```
+
+量旋云接受并归档的核磁 QASM 为 `H q[0]`、`CX q[0],q[1]`；平台在运行流程中完成系综读取，因此没有显式 `creg/measure`。原始 MessagePack 的 SHA-256 为 `42ff34136c92abe1a1437b303e7744fb2165e587331d46fa7ec6c5ac4fdcf205`，完整解码结果为 `00=0.42870904`、`01=0.25981577`、`10=0.00699561`、`11=0.30447958`，总和为 `1.0`。本证据不虚构平台未提供的 shots。
+
 ## L2 交互体验
 
 请填写：
