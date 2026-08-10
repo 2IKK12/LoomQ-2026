@@ -1,0 +1,23 @@
+{
+  "platform": "Origin Quantum Cloud",
+  "backend": "本源悟空 180",
+  "job_id": "B66CD75184D321AB9B7479930B4C3240",
+  "status": "计算成功",
+  "created_at": "2026-08-09T21:06:35.155+08:00",
+  "completed_at": "2026-08-09T21:06:48.980+08:00",
+  "shots": 1000,
+  "qubits": 2,
+  "mapped_physical_qubits": [115, 124],
+  "task_duration_seconds": 0.619,
+  "chip_runtime_seconds": 0.319,
+  "optimization_enabled": true,
+  "mapping_enabled": true,
+  "counts_derived_from_exported_probabilities": {
+    "00": 60,
+    "01": 145,
+    "10": 498,
+    "11": 297
+  },
+  "raw_result_file": "origin-wukong-180-result.csv",
+  "provenance_note": "Metadata was transcribed from the successful task page. The CSV values were copied without alteration from the platform-exported B66CD75184D321AB9B7479930B4C3240_probability.csv. Counts are exact arithmetic probability * 1000 shots and are labeled as derived."
+}

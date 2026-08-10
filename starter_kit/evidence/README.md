@@ -8,7 +8,7 @@
 
 把要申报项目的方框改成 `[x]`，并填写对应内容：
 
-- [ ] L1 真机
+- [x] L1 真机
 - [x] L2 交互体验
 - [x] 工程与产品化
 - [x] 自定义量子 RISC-V Bonus
@@ -37,6 +37,27 @@ evidence/files/spinq-screenshot.png
 ```
 
 工作人员会核对 job ID、运行时间、电路、shots 和原始结果。截图只能辅助说明，不能代替 job ID 和原始结果。
+
+本源量子真机：
+
+```text
+平台名称：Origin Quantum Cloud / 本源悟空 180
+平台 job ID：B66CD75184D321AB9B7479930B4C3240
+运行时间：2026-08-09 21:06:35.155 至 21:06:48.980（UTC+8）
+shots：1000
+实际执行的 QASM：starter_kit/evidence/files/origin-wukong-180-bell.qasm
+提交到平台的 OriginIR：starter_kit/evidence/files/origin-wukong-180-input.originir
+平台返回的原始结果：starter_kit/evidence/files/origin-wukong-180-result.csv
+任务元数据：starter_kit/evidence/files/origin-wukong-180-job.json
+任务成功与结果截图：starter_kit/evidence/files/origin-wukong-180-task-result.png
+提交前线路与后端截图：starter_kit/evidence/files/origin-wukong-180-editor.png
+映射前后线路截图：starter_kit/evidence/files/origin-wukong-180-mapped-circuit.png
+编译前后 OriginIR 截图：starter_kit/evidence/files/origin-wukong-180-compiled-originir.png
+```
+
+平台将逻辑量子比特映射到物理量子比特 `q[115]`、`q[124]`，并将逻辑线路编译为含 `RPHI`、`CZ`、`BARRIER` 和测量的芯片线路。原始概率为 `00=0.06`、`01=0.145`、`10=0.498`、`11=0.297`。结果与理想 Bell 分布偏差较大，本证据如实保留平台输出，只申报真实硬件执行，不把该结果描述为高保真 Bell 态。
+
+截图分工：`editor` 证明提交前在线真机后端与线路；`task-result` 证明 job ID、成功状态、shots、运行时间和平台结果；`mapped-circuit` 证明逻辑线路到物理比特的映射；`compiled-originir` 证明输入 OriginIR 到芯片原生门序列的编译。截图仅作辅助，数值依据仍为平台导出的 CSV。
 
 ## L2 交互体验
 
