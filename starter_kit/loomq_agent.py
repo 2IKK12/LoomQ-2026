@@ -204,6 +204,15 @@ def circuit_summary(qasm: str) -> dict[str, Any]:
         "classical_bits": circuit.classical_count,
         "gates": [operation.name for operation in circuit.operations],
         "measurements": len(circuit.measurements),
+        "operations": [
+            {
+                "name": operation.name,
+                "qubits": list(operation.qubits),
+                "parameter": operation.parameter,
+            }
+            for operation in circuit.operations
+        ],
+        "measurement_map": [list(item) for item in circuit.measurements],
     }
 
 
@@ -428,6 +437,102 @@ what the experiment supports, and what it cannot establish. Distinguish an ideal
 from real quantum hardware. Do not generate or replace QASM, do not invent counts, and do not
 answer a different experiment. Return readable plain text without Markdown headings or code fences.
 Be concise and concrete."""
+
+DICTIONARY_SYSTEM_PROMPT = """You are LoomQ's contextual quantum dictionary.
+The fixed definition supplied by the application is authoritative. Explain only how that term
+appears in the supplied user question and validated circuit. Use the user's language. Start with
+the professional term, then explain it in direct, complete sentences for a first-time learner.
+Avoid decorative metaphors, invented history, unsupported claims, and new QASM. Mention the exact
+gate or qubit from the circuit when relevant. Limit the answer to 120 Chinese characters or an
+equivalent length in another language."""
+
+DICTIONARY_DEFINITIONS = {
+    "superposition": (
+        "叠加态（Quantum Superposition）",
+        "叠加态是由多个基态线性组合而成的量子态。一个量子比特可写成 "
+        "|ψ⟩ = α|0⟩ + β|1⟩，概率幅的模平方给出各测量结果的概率。",
+    ),
+    "h": (
+        "Hadamard 门（H Gate）",
+        "Hadamard 门是单量子比特的幺正变换。它满足 "
+        "H|0⟩=(|0⟩+|1⟩)/√2，H|1⟩=(|0⟩−|1⟩)/√2。",
+    ),
+    "cx": (
+        "受控非门（CX / CNOT Gate）",
+        "受控非门是双量子比特的幺正变换。控制位为 0 时目标位保持原状态；"
+        "控制位为 1 时，目标位执行 X 变换。",
+    ),
+    "measure": (
+        "量子测量（Measurement）",
+        "量子测量将量子态映射为选定测量基中的经典结果。"
+        "计算基测量一个量子比特时，结果为 0 或 1。",
+    ),
+    "qubit": (
+        "量子比特（Qubit）",
+        "量子比特是量子信息的基本单位。"
+        "它的状态可由 |0⟩ 和 |1⟩ 两个基态的线性组合表示。",
+    ),
+    "entanglement": (
+        "量子纠缠（Quantum Entanglement）",
+        "量子纠缠是一种复合量子状态，"
+        "整体状态无法写成各子系统状态的简单乘积。",
+    ),
+    "circuit": (
+        "量子线路（Quantum Circuit）",
+        "量子线路是按顺序组织量子比特、量子门和测量操作的计算表示。",
+    ),
+    "bell": (
+        "Bell 态（Bell State）",
+        "Bell 态是四种特定的两量子比特最大纠缠态。"
+        "LoomQ 常用的一种可写成 (|00⟩+|11⟩)/√2。",
+    ),
+    "ghz": (
+        "GHZ 态（Greenberger–Horne–Zeilinger State）",
+        "n 量子比特 GHZ 态可写成 (|00…00⟩+|11…11⟩)/√2，"
+        "是一类多量子比特纠缠态。",
+    ),
+    "amplitude": (
+        "概率幅（Probability Amplitude）",
+        "概率幅是量子态中与各基态对应的复数系数，"
+        "它的模平方给出相应测量结果的概率。",
+    ),
+    "phase": (
+        "量子相位（Quantum Phase）",
+        "相位是概率幅的复数角度信息，"
+        "相对相位可以改变后续干涉和测量结果。",
+    ),
+    "interference": (
+        "量子干涉（Quantum Interference）",
+        "量子干涉是不同计算路径的概率幅相加或抵消，"
+        "从而改变测量结果的概率。",
+    ),
+}
+
+
+def explain_dictionary_term(term_key: str, prompt: str, qasm: str) -> str:
+    """Generate a short circuit-grounded example without changing fixed knowledge."""
+    if not all(isinstance(value, str) for value in (term_key, prompt, qasm)):
+        raise ValueError("dictionary context must be text")
+    if term_key not in DICTIONARY_DEFINITIONS:
+        raise ValueError("unsupported dictionary term")
+    if not qasm.strip():
+        raise ValueError("dictionary qasm is required")
+    term, definition = DICTIONARY_DEFINITIONS[term_key]
+    context = {
+        "term": term.strip()[:120],
+        "fixed_definition": definition.strip()[:2000],
+        "user_question": prompt.strip()[:4000],
+        "validated_circuit": circuit_summary(qasm),
+        "validated_qasm": qasm.strip(),
+    }
+    return _content(
+        chat_completion(
+            [
+                {"role": "system", "content": DICTIONARY_SYSTEM_PROMPT},
+                {"role": "user", "content": json.dumps(context, ensure_ascii=False)},
+            ]
+        )
+    )
 
 
 def explain_experiment_result(

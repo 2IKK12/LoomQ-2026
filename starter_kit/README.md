@@ -44,6 +44,8 @@ python3 web_app.py
 校验的 QASM 与三种目标格式，并用 LoomQ 本地理想状态向量模拟器运行和查看测量统计。API Key
 只由 Python 服务端从环境变量读取，不会发送到浏览器。
 
+网页还提供可选的 Amazon Braket 真机提交网关。该功能默认关闭，只有本机安装官方 SDK 并通过环境变量配置 QPU 后才可用；每次提交都需要二次确认。配置方法见 [`docs/REAL_HARDWARE.md`](docs/REAL_HARDWARE.md)。
+
 Quick L1 verification from this directory:
 
 ```bash

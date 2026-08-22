@@ -18,6 +18,19 @@ from typing import Any
 REQUIRED_ENV = ("LOOMQ_LLM_BASE_URL", "LOOMQ_LLM_API_KEY", "LOOMQ_LLM_MODEL")
 
 
+def _require_http_header_text(name: str, value: str) -> None:
+    """Reject placeholder values that urllib cannot put in an HTTP header."""
+    try:
+        value.encode("latin-1")
+    except UnicodeEncodeError as exc:
+        raise RuntimeError(
+            f"{name} contains non-ASCII placeholder text; configure the real API value "
+            "in the same terminal before starting LoomQ"
+        ) from exc
+    if "\r" in value or "\n" in value:
+        raise RuntimeError(f"{name} contains an invalid line break")
+
+
 def _configuration() -> tuple[str, str, str, float, int]:
     missing = [name for name in REQUIRED_ENV if not os.environ.get(name)]
     if missing:
@@ -29,10 +42,16 @@ def _configuration() -> tuple[str, str, str, float, int]:
         raise RuntimeError("invalid LoomQ L2 numeric environment variable") from exc
     if timeout <= 0 or max_output <= 0:
         raise RuntimeError("LoomQ L2 timeout and output-token limit must be positive")
+    base_url = os.environ["LOOMQ_LLM_BASE_URL"].strip().rstrip("/")
+    api_key = os.environ["LOOMQ_LLM_API_KEY"].strip()
+    model = os.environ["LOOMQ_LLM_MODEL"].strip()
+    _require_http_header_text("LOOMQ_LLM_API_KEY", api_key)
+    if not base_url.startswith(("https://", "http://")):
+        raise RuntimeError("LOOMQ_LLM_BASE_URL must start with https:// or http://")
     return (
-        os.environ["LOOMQ_LLM_BASE_URL"].rstrip("/"),
-        os.environ["LOOMQ_LLM_API_KEY"],
-        os.environ["LOOMQ_LLM_MODEL"],
+        base_url,
+        api_key,
+        model,
         timeout,
         max_output,
     )

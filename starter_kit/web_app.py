@@ -12,15 +12,18 @@ from typing import Any
 
 try:
     from . import adapter
+    from .hardware_runner import hardware_status, run_hardware
     from .loomq_agent import (
         agent_chat_with_history,
         circuit_summary,
+        explain_dictionary_term,
         explain_experiment_result,
         extract_qasm,
     )
 except ImportError:
     import adapter
-    from loomq_agent import agent_chat_with_history, circuit_summary, explain_experiment_result, extract_qasm
+    from hardware_runner import hardware_status, run_hardware
+    from loomq_agent import agent_chat_with_history, circuit_summary, explain_dictionary_term, explain_experiment_result, extract_qasm
 
 
 WEB_ROOT = Path(__file__).resolve().parent / "web"
@@ -88,6 +91,9 @@ class LoomQHandler(BaseHTTPRequestHandler):
         if self.path == "/api/health":
             self._json(200, {"service": "LoomQ", "api_version": API_VERSION})
             return
+        if self.path == "/api/backends":
+            self._json(200, hardware_status())
+            return
         requested = "index.html" if self.path in {"/", "/index.html"} else self.path.lstrip("/")
         if requested not in {"index.html", "styles.css", "app.js"}:
             self.send_error(404)
@@ -132,7 +138,13 @@ class LoomQHandler(BaseHTTPRequestHandler):
                 shots = payload.get("shots", 1024)
                 if not isinstance(qasm, str) or not qasm.strip():
                     raise ValueError("当前没有可运行的 QASM 电路")
-                result = adapter.run(qasm, target, shots)
+                execution_mode = payload.get("execution_mode", "local")
+                if execution_mode == "hardware":
+                    result = run_hardware(qasm, payload.get("hardware_backend", "braket_qpu"), shots)
+                elif execution_mode == "local":
+                    result = adapter.run(qasm, target, shots)
+                else:
+                    raise ValueError("execution_mode 必须是 local 或 hardware")
                 response: dict[str, Any] = {"result": result}
                 if payload.get("explain") is True:
                     prompt = payload.get("prompt")
@@ -176,6 +188,13 @@ class LoomQHandler(BaseHTTPRequestHandler):
                     previous_explanation=previous,
                 )
                 self._json(200, {"explanation": explanation})
+                return
+            if self.path == "/api/dictionary":
+                term_key = payload.get("term_key")
+                prompt = payload.get("prompt", "")
+                qasm = payload.get("qasm")
+                explanation = explain_dictionary_term(term_key, prompt, qasm)
+                self._json(200, {"contextual_explanation": explanation})
                 return
             self._json(404, {"error": "接口不存在"})
         except ValueError as exc:

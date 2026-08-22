@@ -64,6 +64,16 @@ class PublicL2ContractTests(unittest.TestCase):
                 client.chat_completion([{"role": "user", "content": "hello"}])
         self.assertNotIn("do-not-echo", str(caught.exception))
 
+    def test_non_ascii_api_key_placeholder_has_clear_error(self):
+        environment = {
+            "LOOMQ_LLM_BASE_URL": "https://api.deepseek.com",
+            "LOOMQ_LLM_API_KEY": "请输入真实密钥",
+            "LOOMQ_LLM_MODEL": "deepseek-v4-flash",
+        }
+        with mock.patch.dict(os.environ, environment, clear=True):
+            with self.assertRaisesRegex(RuntimeError, "LOOMQ_LLM_API_KEY"):
+                load_client().chat_completion([{"role": "user", "content": "hello"}])
+
     def test_client_works_with_an_openai_compatible_endpoint(self):
         server = ThreadingHTTPServer(("127.0.0.1", 0), CompatibleAPIHandler)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
